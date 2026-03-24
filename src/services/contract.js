@@ -2,56 +2,35 @@ import { ethers } from "ethers"
 import { CONTRACTS, CHAIN_CONFIG } from "../constants/addresses"
 import ABI from "../constants/abi.json"
 
-/**
- * Отримати provider (read-only)
- */
+// 🔥 Секретна зброя: незалежний провайдер для читання
+// Він гарантує, що ми завжди дивимось у Sepolia, навіть якщо гаманець глючить
+const readOnlyProvider = new ethers.JsonRpcProvider(CHAIN_CONFIG.rpcUrl)
+
 export function getProvider() {
-  if (!window.ethereum) {
-    throw new Error("MetaMask не встановлений")
-  }
+  if (!window.ethereum) throw new Error("MetaMask не встановлений")
   return new ethers.BrowserProvider(window.ethereum)
 }
 
-/**
- * Отримати signer (для транзакцій)
- */
 export async function getSigner() {
   const provider = getProvider()
   return await provider.getSigner()
 }
 
-/**
- * Отримати екземпляр контракту (read-only)
- */
 export function getReadContract() {
-  const provider = getProvider()
-  return new ethers.Contract(CONTRACTS.VOTING, ABI, provider)
+  // Тепер читаємо напряму з інтернету!
+  return new ethers.Contract(CONTRACTS.VOTING, ABI, readOnlyProvider)
 }
 
-/**
- * Отримати екземпляр контракту (для запису)
- */
 export async function getWriteContract() {
   const signer = await getSigner()
   return new ethers.Contract(CONTRACTS.VOTING, ABI, signer)
 }
 
-/**
- * Підключити MetaMask + перемкнути на Sepolia
- */
 export async function connectWallet() {
-  if (!window.ethereum) {
-    throw new Error("Встановіть MetaMask!")
-  }
-
-  // Запит підключення
-  const accounts = await window.ethereum.request({
-    method: "eth_requestAccounts"
-  })
-
-  // Перевіряємо мережу
+  if (!window.ethereum) throw new Error("Встановіть MetaMask!")
+  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+  
   const chainId = await window.ethereum.request({ method: "eth_chainId" })
-
   if (chainId !== CHAIN_CONFIG.chainId) {
     try {
       await window.ethereum.request({
@@ -59,7 +38,6 @@ export async function connectWallet() {
         params: [{ chainId: CHAIN_CONFIG.chainId }]
       })
     } catch (error) {
-      // Якщо мережі немає — додаємо
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
         params: [{
@@ -71,25 +49,22 @@ export async function connectWallet() {
       })
     }
   }
-
   return accounts[0]
 }
 
-/**
- * Отримати дані голосування
- */
 export async function getVotingData() {
   const contract = getReadContract()
 
-  const [proposal, votesFor, votesAgainst, isOpen] = await contract.getResults()
+  // ethers v6: безпечне розпакування результату за індексами
+  const result = await contract.getResults()
   const admin = await contract.admin()
   const groupId = await contract.groupId()
 
   return {
-    proposal,
-    votesFor: Number(votesFor),
-    votesAgainst: Number(votesAgainst),
-    isOpen,
+    proposal: result[0],
+    votesFor: Number(result[1]),
+    votesAgainst: Number(result[2]),
+    isOpen: result[3],
     admin: admin.toLowerCase(),
     groupId: groupId.toString()
   }
