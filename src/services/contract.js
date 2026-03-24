@@ -2,8 +2,6 @@ import { ethers } from "ethers"
 import { CONTRACTS, CHAIN_CONFIG } from "../constants/addresses"
 import ABI from "../constants/abi.json"
 
-// 🔥 Секретна зброя: незалежний провайдер для читання
-// Він гарантує, що ми завжди дивимось у Sepolia, навіть якщо гаманець глючить
 const readOnlyProvider = new ethers.JsonRpcProvider(CHAIN_CONFIG.rpcUrl)
 
 export function getProvider() {
@@ -17,7 +15,6 @@ export async function getSigner() {
 }
 
 export function getReadContract() {
-  // Тепер читаємо напряму з інтернету!
   return new ethers.Contract(CONTRACTS.VOTING, ABI, readOnlyProvider)
 }
 
@@ -52,20 +49,18 @@ export async function connectWallet() {
   return accounts[0]
 }
 
+// 🔥 ОСЬ ЦЯ ФУНКЦІЯ, ЯКОЇ НЕ ВИСТАЧАЛО:
 export async function getVotingData() {
   const contract = getReadContract()
-
-  // ethers v6: безпечне розпакування результату за індексами
-  const result = await contract.getResults()
-  const admin = await contract.admin()
-  const groupId = await contract.groupId()
+  const data = await contract.getVotingData()
 
   return {
-    proposal: result[0],
-    votesFor: Number(result[1]),
-    votesAgainst: Number(result[2]),
-    isOpen: result[3],
-    admin: admin.toLowerCase(),
-    groupId: groupId.toString()
+    proposal: data[0],
+    isOpen: data[1],
+    votesFor: Number(data[2]),
+    votesAgainst: Number(data[3]),
+    admin: data[4].toLowerCase(),
+    groupId: data[5].toString(),
+    proposalId: data[6].toString()
   }
 }

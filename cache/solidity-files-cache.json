@@ -2,17 +2,17 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Maksym\\Downloads\\zkpAPP\\contracts\\AnonymousVoting.sol": {
-      "lastModificationDate": 1774354613131,
-      "contentHash": "3734729f48047b4029fe6791673e2923",
+      "lastModificationDate": 1774385142788,
+      "contentHash": "96a262f51a92eb2c2126a9b7836c0c3e",
       "sourceName": "contracts/AnonymousVoting.sol",
       "solcConfig": {
         "version": "0.8.23",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -46,11 +46,11 @@
       "solcConfig": {
         "version": "0.8.23",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [

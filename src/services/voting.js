@@ -53,8 +53,8 @@ export async function castVote(vote) {
     identityData.identity,
     group,
     BigInt(vote),
-    BigInt(votingData.groupId)
-  )
+    BigInt(votingData.proposalId) // ТЕПЕР ТУТ МАЄ БУТИ proposalId
+  ) 
 
   console.log("✅ ZK-доказ згенеровано! Nullifier:", proof.nullifier)
 

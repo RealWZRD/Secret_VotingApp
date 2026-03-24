@@ -1,7 +1,7 @@
 // Адреси для Sepolia testnet
 
 // Адреса нашого контракту (після деплою)
-export const VOTING_CONTRACT_ADDRESS = "0x6E11175f4A3c3F49F0A141ACA4dE983d35404627";
+export const VOTING_CONTRACT_ADDRESS = "0xd20580E4f872001aae1927c85F06585C584C0fAA";
 
 export const CONTRACTS = {
   // Адреса офіційного Semaphore на Sepolia

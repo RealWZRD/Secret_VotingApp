@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useWallet } from "../context/WalletContext"
 import { hasIdentity } from "../services/identity"
 import { castVote } from "../services/voting"
+import { getVotingData } from "../services/contract"
 import { CHAIN_CONFIG } from "../constants/addresses"
 import VoteCard from "../components/VoteCard"
 import ProofLoader from "../components/ProofLoader"
@@ -14,6 +15,30 @@ export default function Vote() {
   const [status, setStatus] = useState("idle")       // idle | proving | sending | done | error
   const [txHash, setTxHash] = useState(null)
   const [errorMsg, setErrorMsg] = useState(null)
+
+  // Нові стани для завантаження питання з блокчейну
+  const [proposal, setProposal] = useState("")
+  const [isLoadingProposal, setIsLoadingProposal] = useState(true)
+
+  // 1. Завантажуємо питання одразу при відкритті сторінки
+  useEffect(() => {
+    async function fetchProposal() {
+      try {
+        const data = await getVotingData()
+        setProposal(data.proposal)
+      } catch (error) {
+        console.error("Помилка завантаження питання:", error)
+        setProposal("Не вдалося завантажити питання 😢")
+      } finally {
+        setIsLoadingProposal(false)
+      }
+    }
+    
+    // Запускаємо тільки якщо підключений гаманець і є ідентичність
+    if (isConnected && hasIdentity()) {
+      fetchProposal()
+    }
+  }, [isConnected])
 
   const handleVote = async () => {
     if (!selected) return
@@ -31,17 +56,27 @@ export default function Vote() {
       console.error(err)
       setStatus("error")
 
-      if (err.message?.includes("already been used")) {
-        setErrorMsg("Ви вже голосували! Повторне голосування неможливе.")
-      } else {
-        setErrorMsg(err.reason || err.message || "Невідома помилка")
+      // Перетворюємо технічну помилку в текст для пошуку
+      const errorString = (err.message || err.reason || "").toLowerCase()
+
+      // 2. Ловимо подвійне голосування (код 0x208b15e8 або revert)
+      if (errorString.includes("0x208b15e8")) {
+        setErrorMsg("❌ Ви вже проголосували! Математика ZK не дозволяє використати один голос двічі.")
+      }
+      // 3. Ловимо тих, кого немає в групі
+      else if (errorString.includes("not part of") || errorString.includes("does not exist") || errorString.includes("group")) {
+        setErrorMsg("🕵️‍♂️ Вас немає у списку виборців! Передайте ваш Identity Commitment адміністратору для додавання.")
+      } 
+      // Інші системні помилки
+      else {
+        setErrorMsg("Виникла технічна помилка: " + (err.reason || err.message))
       }
 
-      toast.error("Помилка голосування")
+      toast.error("Голосування не вдалося")
     }
   }
 
-  // Перевірки
+  // Перевірки доступу
   if (!isConnected) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
@@ -80,7 +115,10 @@ export default function Vote() {
         <div className="space-y-6">
           <div className="bg-card border border-gray-700 rounded-2xl p-6 text-center">
             <p className="text-gray-400 mb-1">Питання:</p>
-            <p className="text-xl font-bold">Завантаження...</p>
+            {/* Показуємо реальне питання замість статичного "Завантаження" */}
+            <p className="text-xl font-bold text-accent">
+              {isLoadingProposal ? "Шукаємо питання в блокчейні..." : proposal}
+            </p>
           </div>
 
           {/* Картки голосування */}
@@ -101,24 +139,23 @@ export default function Vote() {
             />
           </div>
 
-          {/* Кнопка голосування */}
           <button
             onClick={handleVote}
-            disabled={!selected}
+            disabled={!selected || isLoadingProposal}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition-all
-              ${selected
+              ${selected && !isLoadingProposal
                 ? "bg-primary hover:bg-primary/80 cursor-pointer"
                 : "bg-gray-700 text-gray-500 cursor-not-allowed"
               }`}
           >
             {selected
-              ? `🔮 Згенерувати ZK-доказ та проголосувати "${selected === 1 ? "ЗА" : "ПРОТИ"}"`
+              ? `🔮 Відправити голос "${selected === 1 ? "ЗА" : "ПРОТИ"}"`
               : "Оберіть варіант голосування"
             }
           </button>
-
+          
           <p className="text-center text-gray-500 text-sm">
-            🔒 Ваш голос буде повністю анонімним
+            🔒 Безкоштовна транзакція через Relayer
           </p>
         </div>
       )}
@@ -140,7 +177,7 @@ export default function Vote() {
 
           {txHash && (
             <div className="bg-dark rounded-xl p-4 mb-6">
-              <p className="text-gray-500 text-sm mb-1">Транзакція:</p>
+              <p className="text-gray-500 text-sm mb-1">Транзакція Релеєра:</p>
               <a
                 href={`${CHAIN_CONFIG.explorer}/tx/${txHash}`}
                 target="_blank"
@@ -166,8 +203,10 @@ export default function Vote() {
       {status === "error" && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-red-400 mb-2">Помилка</h2>
-          <p className="text-gray-400 mb-4">{errorMsg}</p>
+          <h2 className="text-2xl font-bold text-red-400 mb-2">Голос не прийнято</h2>
+          <p className="text-gray-300 mb-6 bg-red-950/50 p-4 rounded-lg border border-red-500/20">
+            {errorMsg}
+          </p>
           <button
             onClick={() => {
               setStatus("idle")
