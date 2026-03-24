@@ -1,20 +1,29 @@
 import { generateProof, Group } from "@semaphore-protocol/core"
 import { loadIdentity } from "./identity"
-import { getWriteContract, getVotingData } from "./contract"
+import { getVotingData } from "./contract" // getWriteContract більше не потрібен!
 import { JsonRpcProvider, Contract } from "ethers"
 import { CONTRACTS, CHAIN_CONFIG } from "../constants/addresses"
 
+/**
+ * Проголосувати анонімно з ZK-доказом (через Релеєр)
+ * @param {number} vote - 1 = За, 2 = Проти
+ */
 export async function castVote(vote) {
   if (vote !== 1 && vote !== 2) {
     throw new Error("Невірний голос: має бути 1 (За) або 2 (Проти)")
   }
 
+  // 1. Завантажуємо ідентичність
   const identityData = loadIdentity()
   if (!identityData) throw new Error("Спочатку створіть ZK-ідентичність!")
 
+  // 2. Отримуємо дані голосування
   const votingData = await getVotingData()
   if (!votingData.isOpen) throw new Error("Голосування закрите!")
 
+  // ==========================================
+  // 3. ВІДНОВЛЮЄМО ГРУПУ З БЛОКЧЕЙНУ
+  // ==========================================
   console.log("⏳ Отримуємо список виборців напряму з мережі...")
   
   const rpcProvider = new JsonRpcProvider(CHAIN_CONFIG.rpcUrl)
@@ -33,33 +42,48 @@ export async function castVote(vote) {
   const safeEvents = Array.isArray(events) ? events : []
   const membersList = safeEvents.map(e => e.args[2].toString())
 
-  // 🔥 ОСЬ ТУТ БУЛА ПОМИЛКА!
-  // Для Semaphore v4 ми просто передаємо масив виборців прямо в Групу
   const group = new Group(membersList)
   console.log(`👥 Знайдено виборців у групі: ${membersList.length}`)
 
+  // ==========================================
+  // 4. ГЕНЕРУЄМО ZK-ДОКАЗ
+  // ==========================================
   console.log("⏳ Генерація ZK-доказу...")
   const proof = await generateProof(
     identityData.identity,
     group,
     BigInt(vote),
-    BigInt(votingData.groupId) // А от scope (ID групи) потрібен тільки тут!
+    BigInt(votingData.groupId)
   )
 
   console.log("✅ ZK-доказ згенеровано! Nullifier:", proof.nullifier)
 
-  const contract = await getWriteContract()
-  const tx = await contract.castVote(
-    vote,
-    proof.merkleTreeDepth,
-    proof.merkleTreeRoot,
-    proof.nullifier,
-    proof.points
-  )
+  // ==========================================
+  // 5. ВІДПРАВЛЯЄМО НА РЕЛЕЄР (БЕЗ КОМІСІЇ ДЛЯ КОРИСТУВАЧА)
+  // ==========================================
+  console.log("📤 Відправляємо доказ на Релеєр...")
+  
+  const response = await fetch("http://localhost:3000/relay-vote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      vote: vote,
+      merkleTreeDepth: proof.merkleTreeDepth,
+      merkleTreeRoot: proof.merkleTreeRoot,
+      nullifier: proof.nullifier,
+      points: proof.points
+    })
+  })
 
-  console.log("📤 Транзакція відправлена:", tx.hash)
-  const receipt = await tx.wait()
-  console.log("✅ Голос зараховано анонімно!")
+  const data = await response.json()
 
-  return { txHash: tx.hash, blockNumber: receipt.blockNumber }
+  // Якщо бекенд повернув помилку
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "Помилка релеєра при відправці транзакції")
+  }
+
+  console.log("✅ Голос успішно оплачено та зараховано релеєром!")
+  
+  // Повертаємо хеш транзакції, який нам віддав сервер
+  return { txHash: data.txHash }
 }
