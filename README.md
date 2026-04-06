@@ -31,3 +31,7 @@ Voting process (generated locally in the browser)
 
 Explorer results (starting voting, adding new members, processing votes, and ending voting)
 <img width="1369" height="241" alt="image" src="https://github.com/user-attachments/assets/0e4e2289-ebb9-4d94-8b94-72b3385a6fd5" />
+
+smart contract adress, check ethereum-sepolia explorer
+
+0xd20580E4f872001aae1927c85F06585C584C0fAA
