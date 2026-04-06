@@ -59,7 +59,7 @@ export default function Results() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 text-center">📊 Результати</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center"> Результати</h1>
 
       {/* Питання */}
       <div className="bg-card border border-gray-700 rounded-2xl p-6 mb-6">
@@ -71,7 +71,7 @@ export default function Results() {
               ? "bg-green-500/20 text-green-400"
               : "bg-red-500/20 text-red-400"
           }`}>
-            {voting.isOpen ? "🟢 Активне" : "🔴 Завершено"}
+            {voting.isOpen ? " Активне" : " Завершено"}
           </span>
         </div>
       </div>
@@ -79,13 +79,13 @@ export default function Results() {
       {/* Результати */}
       <div className="bg-card border border-gray-700 rounded-2xl p-6 mb-6">
         <ResultsBar
-          label="👍 ЗА"
+          label="ЗА"
           count={voting.votesFor}
           total={total}
           color="bg-gradient-to-r from-green-500 to-emerald-400"
         />
         <ResultsBar
-          label="👎 ПРОТИ"
+          label="ПРОТИ"
           count={voting.votesAgainst}
           total={total}
           color="bg-gradient-to-r from-red-500 to-rose-400"
@@ -100,7 +100,7 @@ export default function Results() {
 
       {/* Верифікація */}
       <div className="bg-card border border-gray-700 rounded-2xl p-6">
-        <h3 className="font-bold mb-3">🔍 Верифікація на блокчейні</h3>
+        <h3 className="font-bold mb-3">Верифікація на блокчейні</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-400">Контракт:</span>

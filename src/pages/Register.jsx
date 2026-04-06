@@ -40,7 +40,7 @@ export default function Register() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 text-center">🔐 Реєстрація акціонера</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center"> Реєстрація акціонера</h1>
 
       {!commitment ? (
         /* Ідентичність ще не створена */
@@ -70,7 +70,7 @@ export default function Register() {
                 <HiShieldCheck className="text-green-400 text-3xl" />
                 <div>
                   <h2 className="text-xl font-bold text-green-400">
-                    {justCreated ? "Бюлетень створено! 🎉" : "Ключ доступу активний ✅"}
+                    {justCreated ? "Бюлетень створено! 🎉" : "Ключ доступу активний"}
                   </h2>
                   <p className="text-green-500/70 text-sm">
                     Ваш секрет надійно схований у браузері.

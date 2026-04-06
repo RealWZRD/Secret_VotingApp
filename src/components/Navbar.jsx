@@ -16,7 +16,6 @@ export default function Navbar() {
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         {/* Логотип */}
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🗳️</span>
           <span className="font-bold text-lg text-accent">ZK Vote</span>
         </div>
 

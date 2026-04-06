@@ -108,7 +108,7 @@ export default function Vote() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 text-center">🗳️ Голосування</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center"> Голосування</h1>
 
       {/* Стан: вибір голосу */}
       {status === "idle" && (
@@ -166,7 +166,6 @@ export default function Vote() {
       {/* Стан: успіх */}
       {status === "done" && (
         <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-8 text-center">
-          <div className="text-6xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-green-400 mb-2">
             Голос зараховано анонімно!
           </h2>
@@ -194,7 +193,7 @@ export default function Vote() {
             className="inline-block bg-primary hover:bg-primary/80 px-6 py-3 
                        rounded-xl font-medium transition-colors"
           >
-            📊 Переглянути результати
+            Переглянути результати
           </Link>
         </div>
       )}

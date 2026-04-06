@@ -26,7 +26,7 @@ export default function Home() {
       {/* Hero */}
       <div className="text-center mb-12">
         <h1 className="text-5xl font-bold mb-4">
-          🗳️ Анонімне голосування
+          Анонімне голосування
         </h1>
         <p className="text-xl text-gray-400 mb-2">
           на базі <span className="text-accent font-semibold">Zero-Knowledge Proofs</span>
@@ -41,17 +41,14 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
         {[
           {
-            emoji: "🔐",
             title: "Приватність",
             desc: "Секретний ключ ніколи не покидає твій браузер"
           },
           {
-            emoji: "🔮",
             title: "ZK-Доказ",
             desc: "Математичний доказ що ти в групі, без розкриття хто ти"
           },
           {
-            emoji: "⛓️",
             title: "Блокчейн",
             desc: "Результат верифікується на Ethereum, незмінний і прозорий"
           }
@@ -78,7 +75,7 @@ export default function Home() {
         <div className="text-center text-gray-400">Завантаження...</div>
       ) : voting ? (
         <div className="bg-card border border-gray-700 rounded-2xl p-8">
-          <h2 className="text-xl font-bold mb-4">📋 Поточне голосування</h2>
+          <h2 className="text-xl font-bold mb-4"> Поточне голосування</h2>
 
           <div className="bg-dark rounded-xl p-4 mb-4">
             <p className="text-lg font-medium">&ldquo;{voting.proposal}&rdquo;</p>
@@ -112,7 +109,7 @@ export default function Home() {
                 className="flex-1 bg-primary hover:bg-primary/80 text-center 
                            py-3 rounded-xl font-medium transition-colors"
               >
-                🗳️ Голосувати
+                Голосувати
               </Link>
             )}
             <Link
@@ -120,7 +117,7 @@ export default function Home() {
               className="flex-1 bg-card border border-gray-600 hover:border-gray-400 
                          text-center py-3 rounded-xl font-medium transition-colors"
             >
-              📊 Результати
+              Результати
             </Link>
           </div>
         </div>
